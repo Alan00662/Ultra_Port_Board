@@ -1,0 +1,57 @@
+      Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
+        88          0          0          0         36          0   crc.o
+       112          0          0          0        104          0   dma2d.o
+       236          0          0          0        160          0   fdcan.o
+       380          0          0          0          0          0   gpio.o
+       372          0          0          1          0          0   gt911.o
+       448          0          0          0        168          0   i2c.o
+       588          0          0          0          0          0   lcd.o
+       464          0          0          8     307368          0   ltdc.o
+       512          0          0          6       1044          0   main.o
+       280          0          0          0         76          0   quadspi.o
+        28          0          0          0          0          0   ring_buffer.o
+       404          0          0          0        272          0   spi.o
+        64          0        664          0       4096          0   startup_stm32h750xx.o
+       168          0          0         12          0          0   stm32h7xx_hal.o
+       160          0          0          0          0          0   stm32h7xx_hal_cortex.o
+       120          0          0          0          0          0   stm32h7xx_hal_crc.o
+        84          0          0          0          0          0   stm32h7xx_hal_crc_ex.o
+       336          0          0          0          0          0   stm32h7xx_hal_dma2d.o
+      1036          0         92          0          0          0   stm32h7xx_hal_fdcan.o
+       566          0          0          0          0          0   stm32h7xx_hal_gpio.o
+      2408          0          0          0          0          0   stm32h7xx_hal_hcd.o
+      1642          0          0          0          0          0   stm32h7xx_hal_i2c.o
+       172          0          0          0          0          0   stm32h7xx_hal_i2c_ex.o
+       454          0          0          0          0          0   stm32h7xx_hal_ltdc.o
+        36          0          0          0          0          0   stm32h7xx_hal_msp.o
+      2050          0          0          0          0          0   stm32h7xx_hal_pcd.o
+        42          0          0          0          0          0   stm32h7xx_hal_pcd_ex.o
+       100          0          0          0          0          0   stm32h7xx_hal_pwr_ex.o
+       244          0          0          0          0          0   stm32h7xx_hal_qspi.o
+      2558          0          0          0          0          0   stm32h7xx_hal_rcc.o
+      3736          0          0          0          0          0   stm32h7xx_hal_rcc_ex.o
+      1206          0          0          0          0          0   stm32h7xx_hal_spi.o
+       782          0          0          0          0          0   stm32h7xx_hal_tim.o
+       170          0          0          0          0          0   stm32h7xx_hal_tim_ex.o
+       140          0          0          0         76          0   stm32h7xx_hal_timebase_tim.o
+      1648          0         24          0          0          0   stm32h7xx_hal_uart.o
+       424          0         16          0          0          0   stm32h7xx_hal_uart_ex.o
+        72          0          0          0          0          0   stm32h7xx_it.o
+      2030          0          0          0          0          0   stm32h7xx_ll_usb.o
+       220          0         16          8          0          0   system_stm32h7xx.o
+       132          0          0          0         76          0   tim.o
+       432          0          0          0        296          0   usart.o
+       436          0          0          0       2244          0   usb_otg.o
+Object Totals
+
+Memory Map of the image
+
+	Load Region LR_IROM1 
+
+		Execution Region ER_IROM1 (Exec base: 0x08000000, Size: 0x000071F4, Max: 0x00200000, END)
+
+		Execution Region RW_IRAM1 (Exec base: 0x20000000, Size: 0x00000000, Max: 0x00020000, END)
+
+		Execution Region RW_IRAM2 (Exec base: 0x24000000, Size: 0x0004D2F8, Max: 0x00080000, END)
+
+Image component sizes

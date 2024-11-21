@@ -1,0 +1,17 @@
+# TX15
+.vscode/
+*.o
+*.d
+*.log
+*.bak
+*.tmp
+*.swp
+*.swo
+*.swn
+*.crf
+*.iex
+*.swm
+*.dep      
+*.htm  
+*.lnp 
+*.map
