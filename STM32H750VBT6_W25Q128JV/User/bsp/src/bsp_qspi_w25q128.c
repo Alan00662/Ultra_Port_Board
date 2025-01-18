@@ -97,7 +97,7 @@ uint8_t bsp_InitQSPI_W25Q128(void)
     */
     hqspi.Init.ClockMode         = QSPI_CLOCK_MODE_0;
     /* QSPI有两个BANK，这里使用的BANK1 */
-    hqspi.Init.FlashID           = QSPI_FLASH_ID_1;
+    hqspi.Init.FlashID           = QSPI_FLASH_ID_2;
     /* V7开发板仅使用了BANK1，这里是禁止双BANK */
     hqspi.Init.DualFlash         = QSPI_DUALFLASH_DISABLE;
     /* 初始化配置QSPI */

@@ -1874,9 +1874,9 @@
       </Doc>
       <Doc>
         <Name>..\Core\Src\quadspi.c</Name>
-        <ColumnNumber>2</ColumnNumber>
-        <TopLine>22</TopLine>
-        <CurrentLine>57</CurrentLine>
+        <ColumnNumber>36</ColumnNumber>
+        <TopLine>40</TopLine>
+        <CurrentLine>39</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>

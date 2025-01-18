@@ -80,7 +80,7 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>1</RunUserProg1>
+            <RunUserProg1>0</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
             <UserProg1Name>D:\10.TX15\UltraPort\UI模板工程\使用片内flash\touchgfx\MDK-ARM\keil-build-viewer.exe</UserProg1Name>
             <UserProg2Name></UserProg2Name>
@@ -276,8 +276,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>0x8000000</StartAddress>
-                <Size>0x200000</Size>
+                <StartAddress>0x9000000</StartAddress>
+                <Size>0x1000000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
