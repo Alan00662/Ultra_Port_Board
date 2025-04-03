@@ -433,6 +433,7 @@ uint8_t QSPI_MemoryMapped(void)
     s_command.DdrMode 				  		   = QSPI_DDR_MODE_DISABLE;       /* W25Q128JV不支持DDR */
     s_command.DdrHoldHalfCycle 	  		 = QSPI_DDR_HHC_ANALOG_DELAY;   /* DDR模式，数据输出延迟 */
     s_command.SIOOMode 				  	  	 = QSPI_SIOO_INST_EVERY_CMD;    /* 每次传输都发指令 */
+		
     s_command.Instruction 			  		 = CMD_READ;                    /* 对应手册上的指令是: Fast Read Quad I/O  */ 
     s_command.AddressMode 			  		 = QSPI_ADDRESS_4_LINES;        /* 4个地址线 */
     s_command.DataMode 				  	  	 = QSPI_DATA_4_LINES;           /* 4个数据线 */
