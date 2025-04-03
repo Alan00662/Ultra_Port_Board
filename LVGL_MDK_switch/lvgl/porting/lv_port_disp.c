@@ -12,20 +12,35 @@
 #include "lv_port_disp.h"
 #include "lvgl.h"
 #include "gt911.h"
-
+#include "dma2d.h"
 /*********************
  *      DEFINES
  *********************/
 #define MY_DISP_HOR_RES 320
 #define MY_DISP_VER_RES 480
+//#define MY_DISP_HOR_RES 480
+//#define MY_DISP_VER_RES 320
 
 uint16_t LTDC_BUFF[MY_DISP_VER_RES*MY_DISP_HOR_RES];
 
+
+//#define LCD_FRAME_BUF_ADDR    0x90000000+0x50000
+
+//uint32_t ltdc_lcd_framebuf[320][480] __attribute__ ((at(LCD_FRAME_BUF_ADDR)));
+//uint32_t ltdc_lcd_framebuf1[320][480] __attribute__ ((at(LCD_FRAME_BUF_ADDR+0x0030000)));
+
+//uint32_t ltdc_lcd_framebuf[320][480] ={0};
+//uint32_t ltdc_lcd_framebuf1[320][480] ={0};
+
 volatile uint8_t g_gpu_state=0;
 lv_disp_drv_t* g_disp_drv;//全局lv_disp_drv_t指针，用于中断回调函数的入口参数
+
+lv_disp_drv_t* disp_drv_p;
+extern uint8_t ltdc_finish_state; 
 /**********************
  *      TYPEDEFS
  **********************/
+
 
 /**********************
  *  STATIC PROTOTYPES
@@ -86,16 +101,16 @@ void lv_port_disp_init(void)
 //    lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * 136);   /*Initialize the display buffer*/
 
     /* Example for 2) */
-    static lv_disp_draw_buf_t draw_buf_dsc_2;
-    static lv_color_t buf_2_1[MY_DISP_HOR_RES * 68];                        /*A buffer for 10 rows*/
-    static lv_color_t buf_2_2[MY_DISP_HOR_RES * 68];                        /*An other buffer for 10 rows*/
-    lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 68);   /*Initialize the display buffer*/
+   static lv_disp_draw_buf_t draw_buf_dsc_2;
+   static lv_color_t buf_2_1[MY_DISP_HOR_RES * 128];                        /*A buffer for 10 rows*/
+   static lv_color_t buf_2_2[MY_DISP_HOR_RES * 128];                        /*An other buffer for 10 rows*/
+   lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 128);   /*Initialize the display buffer*/
 
 //    /* Example for 3) also set disp_drv.full_refresh = 1 below*/
-//    static lv_disp_draw_buf_t draw_buf_dsc_3;
-//    static lv_color_t buf_3_1[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*A screen sized buffer*/
-//    static lv_color_t buf_3_2[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*Another screen sized buffer*/
-//    lv_disp_draw_buf_init(&draw_buf_dsc_3, buf_3_1, buf_3_2, MY_DISP_VER_RES * LV_VER_RES_MAX);   /*Initialize the display buffer*/
+//       static lv_disp_draw_buf_t draw_buf_dsc_3;
+//	   static lv_color_t buf_3_1[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*A screen sized buffer*/
+//	   static lv_color_t buf_3_2[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*Another screen sized buffer*/
+//	   lv_disp_draw_buf_init(&draw_buf_dsc_3, buf_3_1, buf_3_2, MY_DISP_VER_RES * LV_VER_RES_MAX);   /*Initialize the display buffer*/
 
     /*-----------------------------------
      * Register the display in LVGL
@@ -117,7 +132,9 @@ void lv_port_disp_init(void)
     disp_drv.draw_buf = &draw_buf_dsc_2;
 
     /*Required for Example 3)*/
-    //disp_drv.full_refresh = 1
+   // disp_drv.full_refresh = 1;
+	//disp_drv.sw_rotate = 1;
+	//disp_drv.rotated = LV_DISP_ROT_270;
 
     /* Fill a memory array with a color if you have GPU.
      * Note that, in lv_conf.h you can enable GPUs that has built-in support in LVGL.
@@ -152,6 +169,18 @@ void DMA2D_IRQHandler(void)
 			}
 		}
 	}
+	
+	if((DMA2D->ISR & DMA2D_ISR_TCIF) !=0U)
+	{
+		DMA2D->CR &= ~DMA2D_CR_TCIE;
+		DMA2D->IFCR|=1<<1;//清除传输完成标志
+		if(g_gpu_state==1)
+		{
+			g_gpu_state=0;
+//			lv_disp_flush_ready(disp_drv_p);
+			lv_disp_flush_ready(disp_drv_p);
+		}
+	} 
 }
 
 
@@ -167,8 +196,9 @@ static void disp_init(void)
 static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_color_t * color_p)
 {
 /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
-	//LTDC_Color_Fill(area->x1,area->y1,area->x2,area->y2,(uint16_t*)(color_p));
+//	LTDC_Color_Fill(area->x1,area->y1,area->x2,area->y2,(uint16_t*)(color_p));
 
+	#if 1
 	uint32_t h = area->y2 - area->y1;
 	uint32_t w = area->x2 - area->x1;
 	
@@ -203,6 +233,36 @@ static void disp_flush(lv_disp_drv_t * disp_drv, const lv_area_t * area, lv_colo
 	/* 启动传输 */
 	DMA2D->CR   |= DMA2D_CR_START;   
 	g_gpu_state = 1;
+	#else
+	g_gpu_state = 1;
+	disp_drv_p = disp_drv;
+	uint32_t OffLineSrc = 480 - (area->x2 - area->x1 +1);//行偏移的值=行宽度-线的宽度
+//	uint32_t addr = LCD_FRAME_BUF_ADDR;
+	uint32_t addr = (uint32_t )&ltdc_lcd_framebuf;
+	if(ltdc_finish_state==0)
+	{
+//		uint32_t addr = LCD_FRAME_BUF_ADDR;//LTDC的显存地址
+		uint32_t addr = (uint32_t)&ltdc_lcd_framebuf1;
+	}
+	else
+	{
+//		uint32_t addr = LCD_FRAME_BUF_ADDR+0x001f4000;//LTDC的显存地址
+	}
+//	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2DEN;
+	DMA2D->CR&=~(1<<0);				//先停止DMA2D
+	DMA2D->CR=0<<16;				//存储器到存储器模式
+//	DMA2D->FGPFCCR = LCD_PIXFORMAT_RGB565;	//设置颜色格式
+//	DMA2D->OPFCCR  = LCD_PIXFORMAT_RGB565;
+	DMA2D->FGPFCCR = DMA2D_OUTPUT_RGB565;
+	DMA2D->OPFCCR  = DMA2D_OUTPUT_RGB565;
+	DMA2D->FGOR=0;					//前景层行偏移为0
+	DMA2D->OOR=OffLineSrc;				//设置行偏移
+	DMA2D->FGMAR=(uint32_t)color_p;		//源地址
+	DMA2D->OMAR=addr;				//输出存储器地址
+	DMA2D->NLR=(area->y2-area->y1+1)|((area->x2-area->x1+1)<<16);	//设定行数寄存器
+	DMA2D->CR |=DMA2D_CR_TCIE; //传输完成中断使能
+	DMA2D->CR|=1<<0;	
+#endif	
 }
 
 /*OPTIONAL: GPU INTERFACE*/

@@ -46,7 +46,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
-
+#include "ltdc.h"
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -60,11 +60,12 @@ extern TIM_HandleTypeDef htim6;
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
 extern HCD_HandleTypeDef hhcd_USB_OTG_HS;
 extern TIM_HandleTypeDef htim7;
-
+extern uint32_t ltdc_framebuf[320*480];
 /* USER CODE BEGIN EV */
-
-/* USER CODE END EV */
-
+extern uint32_t ltdc_lcd_framebuf[320][480]; 
+extern uint32_t ltdc_lcd_framebuf1[320][480];/* USER CODE END EV */
+extern volatile uint8_t ltdc_finish_state; 
+extern volatile uint8_t g_gpu_state;
 /******************************************************************************/
 /*           Cortex Processor Interruption and Exception Handlers          */
 /******************************************************************************/
@@ -205,17 +206,38 @@ void OTG_HS_IRQHandler(void)
   /* USER CODE END OTG_HS_IRQn 1 */
 }
 
+
 /**
   * @brief This function handles LTDC global interrupt.
   */
 void LTDC_IRQHandler(void)
 {
+#if 0
+	uint32_t* ptr  = NULL;
   /* USER CODE BEGIN LTDC_IRQn 0 */
+	if(g_gpu_state==0)
+	{
+		if(LTDC->ISR & (1<<0))
+		{
+			if (ltdc_finish_state==0){
+				ltdc_finish_state=1;
+				ptr =  &ltdc_lcd_framebuf1[0][0];
+			}
+			else{
+				ltdc_finish_state=0;
+				ptr =  &ltdc_lcd_framebuf[0][0];
+			}
 
+		//LTDC_Layer_Parameter_Config(0,(uint32_t)ltdc_framebuf[0],LCD_PIXFORMAT,255,0,6,7,0X000000);
+            HAL_LTDC_SetAddress(&hltdc,*ptr,0);
+            LTDC->ICR |= (1 << 0);
+		}
+	} 
+#else
   /* USER CODE END LTDC_IRQn 0 */
   HAL_LTDC_IRQHandler(&hltdc);
   /* USER CODE BEGIN LTDC_IRQn 1 */
-
+#endif
   /* USER CODE END LTDC_IRQn 1 */
 }
 

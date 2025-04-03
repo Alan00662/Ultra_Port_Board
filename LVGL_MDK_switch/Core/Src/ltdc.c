@@ -23,7 +23,7 @@
 /* USER CODE BEGIN 0 */
 extern uint16_t LTDC_BUFF[];
 /* USER CODE END 0 */
-
+volatile uint8_t ltdc_finish_state;
 LTDC_HandleTypeDef hltdc;
 
 /* LTDC init function */
@@ -194,7 +194,11 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef* ltdcHandle)
     HAL_NVIC_SetPriority(LTDC_IRQn, 5, 0);
     HAL_NVIC_EnableIRQ(LTDC_IRQn);
   /* USER CODE BEGIN LTDC_MspInit 1 */
-
+//	LTDC->LIPCR =lcdltdc.vsw+lcdltdc.vbp+lcdltdc.pheight-1;//配置行中断的行数为最后一行
+    LTDC->LIPCR =1+4+480-1;//配置行中断的行数为最后一行
+	LTDC->IER |=LTDC_IER_LIE;//使能LTDC行中断
+//	MY_NVIC_Init(0,2,LTDC_IRQn,2);
+	LTDC->SRCR |= (1<<1); 
   /* USER CODE END LTDC_MspInit 1 */
   }
 }

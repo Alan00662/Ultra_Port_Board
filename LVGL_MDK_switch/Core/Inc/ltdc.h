@@ -33,7 +33,7 @@ extern "C" {
 /* USER CODE END Includes */
 
 extern LTDC_HandleTypeDef hltdc;
-
+extern volatile uint8_t ltdc_finish_state;
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

@@ -25,7 +25,6 @@
 #include "i2c.h"
 #include "ltdc.h"
 #include "memorymap.h"
-#include "quadspi.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
@@ -66,7 +65,7 @@
 void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
-void MPU_Config(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -88,6 +87,8 @@ static uint8_t buffer[BUFFER_SIZE];
 uint8_t rx_buffer=0;
 ring_buffer rb;
 
+void MPU_Config(void);
+	
 /* USER CODE END 0 */
 
 /**
@@ -99,12 +100,16 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 	MPU_Config();
+  SCB->CACR|=1<<2;   //强制D-Cache透写
   /* USER CODE END 1 */
 
   /* Enable the CPU Cache */
 
   /* Enable I-Cache---------------------------------------------------------*/
   SCB_EnableICache();
+
+  /* Enable D-Cache---------------------------------------------------------*/
+  SCB_EnableDCache();
 
   /* MCU Configuration--------------------------------------------------------*/
 
@@ -126,7 +131,6 @@ int main(void)
   MX_GPIO_Init();
   MX_FDCAN1_Init();
   MX_LTDC_Init();
-  MX_QUADSPI_Init();
   MX_USART1_UART_Init();
   MX_I2C3_Init();
   MX_SPI1_Init();
@@ -183,7 +187,12 @@ void SystemClock_Config(void)
 
   /** Configure the main internal regulator output voltage
   */
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
+  while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
+
+  __HAL_RCC_SYSCFG_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
   while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
@@ -196,7 +205,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 5;
-  RCC_OscInitStruct.PLL.PLLN = 96;
+  RCC_OscInitStruct.PLL.PLLN = 192;
   RCC_OscInitStruct.PLL.PLLP = 2;
   RCC_OscInitStruct.PLL.PLLQ = 15;
   RCC_OscInitStruct.PLL.PLLR = 2;
@@ -221,7 +230,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
   RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -233,32 +242,31 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	RB_Write_Byte(&rb,rx_buffer);
 	HAL_UART_Receive_IT(&huart1,&rx_buffer,1);
 }
+
 void MPU_Config(void)
 {
-  MPU_Region_InitTypeDef MPU_InitStruct = {0};
+    MPU_Region_InitTypeDef MPU_InitStruct={0};
 
-  /* Disables the MPU */
-  HAL_MPU_Disable();
+    HAL_MPU_Disable(); // 设置之前先禁止MPU
 
-  /** Initializes and configures the Region and the memory to be protected
-  */
-  MPU_InitStruct.Enable = MPU_REGION_ENABLE;
-  MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-  MPU_InitStruct.BaseAddress = 0x0;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_4GB;
-  MPU_InitStruct.SubRegionDisable = 0x87;
-  MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
-  MPU_InitStruct.AccessPermission = MPU_REGION_NO_ACCESS;
-  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
-  MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
-  MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
-  MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+    MPU_InitStruct.Enable 				= MPU_REGION_ENABLE;
+    MPU_InitStruct.BaseAddress 		    = 0x24000000;
+    MPU_InitStruct.Size 				= MPU_REGION_SIZE_512KB;
+    MPU_InitStruct.AccessPermission 	= MPU_REGION_FULL_ACCESS;
+    MPU_InitStruct.IsBufferable 		= MPU_ACCESS_NOT_BUFFERABLE;
+    MPU_InitStruct.IsCacheable 		    = MPU_ACCESS_CACHEABLE;
+    MPU_InitStruct.IsShareable 		    = MPU_ACCESS_NOT_SHAREABLE;
+    MPU_InitStruct.Number 				= MPU_REGION_NUMBER0;
+    MPU_InitStruct.TypeExtField 		= MPU_TEX_LEVEL0;
+    MPU_InitStruct.SubRegionDisable 	= 0x00;
+    MPU_InitStruct.DisableExec 		    = MPU_INSTRUCTION_ACCESS_ENABLE;
 
-  HAL_MPU_ConfigRegion(&MPU_InitStruct);
-  /* Enables the MPU */
-  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+    HAL_MPU_ConfigRegion(&MPU_InitStruct);
 
+
+    HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);	// 使能MCU
 }
+
 /* USER CODE END 4 */
 
 /**

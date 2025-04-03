@@ -46,6 +46,7 @@ static void switch_event_cb(lv_event_t *e)
 
 }
 
+
 /**
  * @brief  功能文本标签
  * @param  无
@@ -55,7 +56,7 @@ static void lv_example_label(void)
 {
     /* 根据活动屏幕宽度选择字体 */
 
-        font = &lv_font_montserrat_14;
+    font = &lv_font_montserrat_14;
 
     lv_obj_t *label = lv_label_create(lv_scr_act());                            /* 创建标签 */
     lv_label_set_text(label, "Control  Center");                                /* 设置文本内容 */
