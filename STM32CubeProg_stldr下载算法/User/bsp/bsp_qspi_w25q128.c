@@ -1,47 +1,10 @@
-/*
-*********************************************************************************************************
-*
-*    模块名称 : W25Q256 QSPI驱动模块
-*    文件名称 : bsp_qspi_w25q256.c
-*    版    本 : V1.0
-*    说    明 : 使用CPU的QSPI总线驱动串行FLASH，提供基本的读写函数，采用4线方式
-*
-*    修改记录 :
-*        版本号  日期        作者     说明
-*        V1.0    2019-02-12  armfly  正式发布
-*        V1.1    2019-07-07  armfly  增加H7-TOOL引脚定义。
-*
-*    Copyright (C), 2019-2030, 安富莱电子 www.armfly.com
-*
-*********************************************************************************************************
-*/
+
 #include "stm32h7xx_hal.h"
 #include "stm32h7xx_hal_pwr.h"
-#include "stm32h7xx_hal_qspi.h"
-#include "bsp_qspi_w25q256.h"
+
+#include "bsp_qspi_w25q128.h"
 
 
-/* 
-    STM32-V7开发板接线
-
-    PG6/QUADSPI_BK1_NCS     AF10
-    PF10/QUADSPI_CLK        AF9
-    PF8/QUADSPI_BK1_IO0     AF10
-    PF9/QUADSPI_BK1_IO1     AF10
-    PF7/QUADSPI_BK1_IO2     AF9
-    PF6/QUADSPI_BK1_IO3     AF9
-
-    W25Q256JV有512块，每块有16个扇区，每个扇区Sector有16页，每页有256字节，共计32MB
-        
-    H7-TOOL开发板接线
-
-    PG6/QUADSPI_BK1_NCS     AF10
-    PB2/QUADSPI_CLK         AF9
-    PD11/QUADSPI_BK1_IO0    AF10
-    PD12/QUADSPI_BK1_IO1    AF10
-    PF7/QUADSPI_BK1_IO2     AF9
-    PD13/QUADSPI_BK1_IO3    AF9
-*/
 
 /* QSPI引脚和时钟相关配置宏定义 */
 #if 1
@@ -162,7 +125,6 @@ int bsp_InitQSPI_W25Q256(void)
     QSPIHandle.Init.ClockPrescaler = 1;
 
     /* 设置FIFO阀值，范围1 - 32 */
-//    QSPIHandle.Init.FifoThreshold = 1;
     QSPIHandle.Init.FifoThreshold = 32;
     /* 
         QUADSPI在FLASH驱动信号后过半个CLK周期才对FLASH驱动的数据采样。
@@ -170,8 +132,8 @@ int bsp_InitQSPI_W25Q256(void)
     */
     QSPIHandle.Init.SampleShifting = QSPI_SAMPLE_SHIFTING_HALFCYCLE;
 
-    /* Flash大小是2^(FlashSize + 1) = 2^25 = 32MB */
-    QSPIHandle.Init.FlashSize = QSPI_FLASH_SIZE; //QSPI_FLASH_SIZE - 1; 2020-03-04, 需要扩大一倍，否则内存映射方位最后1个地址时，会异常
+    /* Flash大小是2^(FlashSize + 1) = 2^24 = 16MB */
+    QSPIHandle.Init.FlashSize = QSPI_FLASH_SIZE; 
 
     /* 命令之间的CS片选至少保持1个时钟周期的高电平 */
     QSPIHandle.Init.ChipSelectHighTime = QSPI_CS_HIGH_TIME_5_CYCLE;
@@ -182,7 +144,7 @@ int bsp_InitQSPI_W25Q256(void)
     */
     QSPIHandle.Init.ClockMode = QSPI_CLOCK_MODE_0;
 
-    /* QSPI有两个BANK，这里使用的BANK1 */
+    /* 根据CS引脚接线QSPI有两个BANK*/
     QSPIHandle.Init.FlashID = QSPI_FLASH_ID_2;
     /* V7开发板仅使用了BANK1，这里是禁止双BANK */
     QSPIHandle.Init.DualFlash = QSPI_DUALFLASH_DISABLE;
@@ -308,12 +270,11 @@ int QSPI_EraseSector(uint32_t address)
     sCommand.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;                   /* 每次传输都发指令 */
 
     /* 擦除配置 */
-    sCommand.Instruction = 0xD8;         /* 32bit地址方式的扇区擦除命令，扇区大小64KB*/
+    sCommand.Instruction = CMD_ERASE_BLOCK_64K;         					/* 32bit地址方式的扇区擦除命令，扇区大小64KB*/
     sCommand.DummyCycles = 0;                                       /* 无需空周期 */    
     sCommand.AddressMode = QSPI_ADDRESS_1_LINE;                     /* 地址发送是1线方式 */
     sCommand.Address = address;                                     /* 扇区首地址，保证是4KB整数倍 */
     sCommand.NbData = 0; 	                            /* 地址发送是1线方式 */
-		//    sCommand.DataMode = QSPI_DATA_NONE;                             /* 无需发送数据 */
 
 
     if (HAL_QSPI_Command(&QSPIHandle, &sCommand, HAL_MAX_DELAY) != HAL_OK)
@@ -354,19 +315,19 @@ int QSPI_EraseChip(void)
     sCommand.SIOOMode = QSPI_SIOO_INST_EVERY_CMD;                   /* 每次传输都发指令 */
 
     /* 擦除配置 */
-    sCommand.Instruction = BULK_ERASE_CMD;                          /* 32bit地址方式的扇区擦除命令，扇区大小64KB*/
+    sCommand.Instruction = CMD_ERASE_CHIP;                          /* 32bit地址方式的扇区擦除命令，扇区大小64KB*/
     sCommand.AddressMode = QSPI_ADDRESS_1_LINE;                     /* 地址发送是1线方式 */
     sCommand.Address = 0;                                           /* */
     sCommand.DataMode = QSPI_DATA_NONE;                             /* 无需发送数据 */
     sCommand.DummyCycles = 0;                                       /* 无需空周期 */
 
-    if (HAL_QSPI_Command(&QSPIHandle, &sCommand, 0) != HAL_OK)
+    if (HAL_QSPI_Command(&QSPIHandle, &sCommand, HAL_MAX_DELAY) != HAL_OK)
     {
        return 1;
     }
-
-    /* 等待编程结束 */
-    if (QSPI_AutoPollingMemReady(&QSPIHandle) == 1)
+                         //返回等待结果
+//    /* 等待编程结束 */
+		if (QSPI_AutoPollingMemReady(&QSPIHandle) == 1)
     {
         return 1;
     }

@@ -410,14 +410,9 @@
               <FilePath>..\..\User\bsp\bsp.c</FilePath>
             </File>
             <File>
-              <FileName>bsp.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\User\bsp\bsp.h</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_qspi_w25q256.c</FileName>
+              <FileName>bsp_qspi_w25q128.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\User\bsp\src\bsp_qspi_w25q256.c</FilePath>
+              <FilePath>..\..\User\bsp\bsp_qspi_w25q128.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -479,7 +474,7 @@
   <LayerInfo>
     <Layers>
       <Layer>
-        <LayName>&lt;Project Info&gt;</LayName>
+        <LayName>project</LayName>
         <LayTarg>0</LayTarg>
         <LayPrjMark>1</LayPrjMark>
       </Layer>
