@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "BspQspiBoot.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -89,9 +89,13 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_QUADSPI_Init();
-  MX_USART1_UART_Init();
+  MX_UART7_Init();
   /* USER CODE BEGIN 2 */
-
+  BspQspiBoot_Init();
+  debug_string("QSPI Boot Init Complete\n");
+  BspQspiBoot_MemMapped();
+  debug_string("QSPI Boot MemMapped Complete\n");
+  BspQspiBoot_JumpToApp();
   /* USER CODE END 2 */
 
   /* Infinite loop */

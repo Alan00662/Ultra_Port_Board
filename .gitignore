@@ -16,3 +16,4 @@
 *.lnp 
 *.map
 build/
+.cache/

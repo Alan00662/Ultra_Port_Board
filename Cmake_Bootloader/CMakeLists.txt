@@ -48,11 +48,13 @@ target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Add sources to executable
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
+    ${CMAKE_CURRENT_SOURCE_DIR}/BSP/BspQspiBoot.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
+    ${CMAKE_CURRENT_SOURCE_DIR}/BSP/
 )
 
 # Add project symbols (macros)
@@ -73,5 +75,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 add_custom_command(
     TARGET  ${CMAKE_PROJECT_NAME} 
     POST_BUILD 
-    COMMAND ${CMAKE_OBJCOPY} -O binary ${CMAKE_PROJECT_NAME}.elf RM_OS_${BOARD}.bin
+    COMMAND ${CMAKE_OBJCOPY} -O binary ${CMAKE_PROJECT_NAME}.elf ${CMAKE_PROJECT_NAME}.bin
 )
